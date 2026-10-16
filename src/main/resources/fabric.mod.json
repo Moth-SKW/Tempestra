@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "tempestra",
+  "version": "${version}",
+  "name": "Tempestra",
+  "description": "A client-side lightning visual overhaul focused on dramatic custom lightning.",
+  "authors": [
+    "Moth"
+  ],
+  "license": "CC-BY-SA 4.0",
+  "environment": "client",
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "${minecraft_compatibility}",
+    "java": ">=${java_version}",
+    "fabric-api": ">=${fabric_version}",
+    "butterfly_api": "${butterfly_api_version}"
+  },
+  "entrypoints": {
+    "client": [
+      "moth.tempestra.client.TempestraClient"
+    ]
+  },
+  "custom": {
+    "modrinth": {
+      "project_id": "AxDItXlD"
+    },
+    "loom:mods": [
+      {
+        "name": "Tempestra",
+        "value": "tempestra"
+      }
+    ]
+  }
+}

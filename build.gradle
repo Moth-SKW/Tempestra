@@ -1,0 +1,104 @@
+plugins {
+    id 'net.fabricmc.fabric-loom-remap' version '1.17.21'
+    id 'maven-publish'
+}
+
+group = project.property('maven_group')
+version = "${project.property('mod_version')}+${project.property('minecraft_version')}"
+
+base {
+    archivesName = project.property('archives_base_name')
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url = 'https://maven.fabricmc.net/' }
+    maven {
+        name = 'GeckoLib'
+        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content {
+            includeGroupByRegex 'software\\.bernie.*'
+            includeGroup 'com.eliotlash.mclib'
+        }
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Modrinth'
+                url = 'https://api.modrinth.com/maven'
+            }
+        }
+        filter {
+            includeGroup 'maven.modrinth'
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.property('minecraft_version')}"
+    mappings "net.fabricmc:yarn:${project.property('yarn_mappings')}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.property('loader_version')}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.property('fabric_version')}"
+    modImplementation project.property('butterfly_api_coordinate')
+
+    if (project.hasProperty('geckolib_version')) {
+        modImplementation "software.bernie.geckolib:geckolib-fabric-${project.property('minecraft_version')}:${project.property('geckolib_version')}"
+        implementation 'com.eliotlash.mclib:mclib:20'
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(project.property('java_version').toInteger())
+    }
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = project.property('java_version').toInteger()
+}
+
+processResources {
+    def resourceProperties = [
+            version                 : project.version,
+            minecraft_compatibility : project.property('minecraft_compatibility'),
+            loader_version          : project.property('loader_version'),
+            java_version            : project.property('java_version'),
+            fabric_version          : project.property('fabric_version'),
+            butterfly_api_version   : project.property('butterfly_api_version')
+    ]
+    inputs.properties resourceProperties
+    filesMatching("fabric.mod.json") {
+        expand resourceProperties
+    }
+    exclude('pack.mcmeta')
+    doLast {
+        def pack = [description: 'Tempestra resources']
+        if (project.property('ranged_pack_format').toBoolean()) {
+            pack.min_format = project.property('pack_format').toInteger()
+            pack.max_format = project.property('pack_format').toInteger()
+        } else {
+            pack.pack_format = project.property('pack_format').toInteger()
+        }
+        def output = layout.buildDirectory.file('resources/main/pack.mcmeta').get().asFile
+        output.setText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson([pack: pack])) + System.lineSeparator(), 'UTF-8')
+    }
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${base.archivesName.get()}" }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}

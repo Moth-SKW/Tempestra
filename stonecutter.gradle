@@ -1,0 +1,17 @@
+plugins {
+    id 'dev.kikugie.stonecutter'
+}
+
+stonecutter.active '1.21.11' /* [SC] DO NOT EDIT */
+
+tasks.register('buildAll') {
+    group = 'build'
+    description = 'Builds the Tempestra jars for every supported Minecraft version.'
+    dependsOn ':1.20.1:build', ':1.21.1:build', ':1.21.11:build'
+}
+
+tasks.register('remapAll') {
+    group = 'build'
+    description = 'Remaps the Tempestra jars for every supported Minecraft version.'
+    dependsOn ':1.20.1:remapJar', ':1.21.1:remapJar', ':1.21.11:remapJar'
+}
